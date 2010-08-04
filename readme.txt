@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== APC Object Cache Backend ===
 Contributors: markjaquith
 Donate link: http://txfx.net/wordpress-plugins/donate
 Tags: APC, object cache, backend, cache, performance, speed, batcache

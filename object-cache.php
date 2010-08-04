@@ -1,7 +1,7 @@
 <?php
 
 /*
-Name: APC Object Cache
+Name: APC Object Cache Backend
 Description: APC backend for the WP Object Cache.
 Version: 2.0
 URI: http://txfx.net/wordpress-plugins/apc/
