@@ -15,15 +15,9 @@ http://wordpress.org/extend/plugins/memcached/
 
 */
 
-
-
-// gracefully revert to default cache if APC is not installed
-if ( !function_exists( 'apc_store' ) ) :
-	include_once( ABSPATH . WPINC . '/cache.php' );
-	global $_wp_using_ext_object_cache;
-	$_wp_using_ext_object_cache = false;
-	return;
-else :
+if ( !function_exists( 'apc_fetch' ) ) {
+	wp_die( 'You do not have APC installed, so you cannot use the APC object cache backend. Please remove the <code>object-cache.php</code> file from your content directory.' );
+}
 
 function &apc_get_cache() {
 	global $wp_object_cache;
@@ -275,5 +269,3 @@ class WP_Object_Cache {
 		// Nothing here
 	}
 }
-
-endif;
