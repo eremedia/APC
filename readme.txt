@@ -17,7 +17,7 @@ this data can be fetched from the cache, which will be must faster than dynamica
 
 The APC Object Cache backend is also compatible with [Batcache][1], the powerful full page caching engine that runs on WordPress.com
 
-Be sure to read the installation instructions, as this is '''not''' a traditional plugin, and needs to be installed in a specific location.
+Be sure to read the installation instructions, as this is **not** a traditional plugin, and needs to be installed in a specific location.
 
 [1]: http://wordpress.org/extend/plugins/batcache/
 
