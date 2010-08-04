@@ -1,9 +1,9 @@
 <?php
 
 /*
-Name: APC Object Cache Backend
+Name: APC Object Cache
 Description: APC backend for the WP Object Cache.
-Version: 2.0
+Version: 2.0.1
 URI: http://txfx.net/wordpress-plugins/apc/
 Author: Mark Jaquith
 Author URI: http://coveredwebservices.com/
@@ -100,8 +100,7 @@ class WP_Object_Cache {
 		@ ++$this->stats['add'];
 		$this->group_ops[$group][] = "add $id";
 
-		if ( false !== $result )
-			$this->cache[$key] = $data;
+		$this->cache[$key] = $data;
 		return $result;
 	}
 
@@ -139,7 +138,7 @@ class WP_Object_Cache {
 		return true;
 	}
 
-	function delete($id, $group = 'default') {
+	function delete( $id, $group = 'default' ) {
 		$key = $this->key( $id, $group );
 
 		if ( in_array( $group, $this->no_mc_groups ) ) {
@@ -152,8 +151,7 @@ class WP_Object_Cache {
 		@ ++$this->stats['delete'];
 		$this->group_ops[$group][] = "delete $id";
 
-		if ( false !== $result )
-			unset( $this->cache[$key] );
+		unset( $this->cache[$key] );
 
 		return $result; 
 	}

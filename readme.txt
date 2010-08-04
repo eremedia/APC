@@ -42,7 +42,13 @@ Probably, but I'm not going to support them, and you shouldn't still be running 
 * First version in SVN
 * Updated to support increment/decrement and feature parity with the Memcached backend (except for multiget support)
 
+= 2.0.1 =
+* Fixed bugs in wp_cache_delete()
+
 == Upgrade Notice ==
 
 = 2.0 =
 First update in four years! This should last you a while.
+
+= 2.0.1 =
+Fixed bugs regarding wp_cache_delete()
