@@ -18,10 +18,10 @@ http://wordpress.org/extend/plugins/memcached/
 
 
 // gracefully revert to default cache if APC is not installed
-if ( !function_exists( 'apc_store' ) ) {
+if ( !function_exists( 'apc_store' ) ) :
 	include_once( ABSPATH . WPINC . '/cache.php' );
 	return;
-}
+else :
 
 function &apc_get_cache() {
 	global $wp_object_cache;
@@ -273,3 +273,5 @@ class WP_Object_Cache {
 		// Nothing here
 	}
 }
+
+endif;
