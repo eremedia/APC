@@ -1,5 +1,4 @@
 <?php
-
 /*
 Name: APC Object Cache
 Description: APC backend for the WP Object Cache.
