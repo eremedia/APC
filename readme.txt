@@ -52,6 +52,7 @@ Define `WP_APC_KEY_SALT` to something that is unique for each install (like an m
 = 2.0.2 =
 * Perform the `md5( ABSPATH )` calculation once per load (props jdub)
 * Allow users of complex `wp-config.php` setups to define `WP_APC_KEY_SALT` to guarantee key uniqueness (props jdub)
+* Lose the `preg_replace()` call in `::key()` (props jdub)
 
 == Upgrade Notice ==
 
@@ -62,4 +63,4 @@ First update in four years! This should last you a while.
 Fixed bugs regarding wp_cache_delete()
 
 = 2.0.2 =
-Adds support for more esoteric `wp-config.php` setups
+Adds support for more esoteric `wp-config.php` setups, and adds minor performance tweaks.

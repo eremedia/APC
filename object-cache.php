@@ -189,7 +189,7 @@ class WP_Object_Cache {
 		return $value;
 	}
 
-	function key($key, $group) {
+	function key( $key, $group ) {
 		global $blog_id;
 
 		if ( empty( $group ) )
@@ -200,7 +200,7 @@ class WP_Object_Cache {
 		else
 			$prefix = $blog_id . ':';
 
-		return preg_replace( '/\s+/', '', WP_APC_KEY_SALT . ':' . $this->abspath . ":$prefix$group:$key" );
+		return WP_APC_KEY_SALT . ':' . $this->abspath . ":$prefix$group:$key";
 	}
 
 	function replace( $id, $data, $group = 'default', $expire = 0 ) {
