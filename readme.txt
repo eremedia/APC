@@ -36,6 +36,10 @@ Yes! APC supports incrementers and handles its own cleanup of expired objects, s
 
 Probably, but I'm not going to support them, and you shouldn't still be running them!
 
+= I share `wp-config.php` among multiple WordPress installs. How can I guarantee key uniqueness? =
+
+Define `WP_APC_KEY_SALT` to something that is unique for each install (like an md5 of the MySQL host, database, and table prefix).
+
 == Changelog ==
 
 = 2.0 =
@@ -45,6 +49,10 @@ Probably, but I'm not going to support them, and you shouldn't still be running 
 = 2.0.1 =
 * Fixed bugs in wp_cache_delete()
 
+= 2.0.2 =
+* Perform the `md5( ABSPATH )` calculation once per load (props jdub)
+* Allow users of complex `wp-config.php` setups to define `WP_APC_KEY_SALT` to guarantee key uniqueness (props jdub)
+
 == Upgrade Notice ==
 
 = 2.0 =
@@ -52,3 +60,6 @@ First update in four years! This should last you a while.
 
 = 2.0.1 =
 Fixed bugs regarding wp_cache_delete()
+
+= 2.0.2 =
+Adds support for more esoteric `wp-config.php` setups
