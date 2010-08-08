@@ -23,14 +23,15 @@ Be sure to read the installation instructions, as this is **not** a traditional 
 
 == Installation ==
 
-1. Copy `object-cache.php` to your WordPress content directory (`wp-content/` by default).
-2. Done!
+1. Verify that you have PHP 5.2+ and a compatible APC version installed.
+2. Copy `object-cache.php` to your WordPress content directory (`wp-content/` by default).
+3. Done!
 
 == Frequently Asked Questions ==
 
 = Does this work as a backend for Batcache? =
 
-Yes! APC supports incrementers and handles its own cleanup of expired objects, so it works just fine for Batcache.
+Yes! APC 3.1.1+ supports incrementers and handles its own cleanup of expired objects, so it works just fine for Batcache. Lower versions of APC will work, but the hits trigger will be disabled.
 
 = Does this support versions of WordPress earlier than 2.9.2? =
 
@@ -53,6 +54,9 @@ Define `WP_APC_KEY_SALT` to something that is unique for each install (like an m
 * Perform the `md5( ABSPATH )` calculation once per load (props jdub)
 * Allow users of complex `wp-config.php` setups to define `WP_APC_KEY_SALT` to guarantee key uniqueness (props jdub)
 * Lose the `preg_replace()` call in `::key()` (props jdub)
+* Rename the `incr` method to `incr2` and then conditionally add `incr` via class extension (so that Batcache can properly detect incrementor support)
+* Convert arrays to ArrayObject objects (APC does not cache multi-level arrays or arrays of objects, so this works around that)
+* Require PHP 5.2+
 
 == Upgrade Notice ==
 
@@ -63,4 +67,4 @@ First update in four years! This should last you a while.
 Fixed bugs regarding wp_cache_delete()
 
 = 2.0.2 =
-Adds support for more esoteric `wp-config.php` setups, and adds minor performance tweaks.
+Support for lower versions of APC (Batcache, especially). Adds support for more esoteric `wp-config.php` setups, and adds minor performance tweaks.

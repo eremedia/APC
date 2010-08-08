@@ -16,6 +16,8 @@ http://wordpress.org/extend/plugins/memcached/
 
 if ( !function_exists( 'apc_fetch' ) ) {
 	wp_die( 'You do not have APC installed, so you cannot use the APC object cache backend. Please remove the <code>object-cache.php</code> file from your content directory.' );
+} elseif ( version_compare( '5.2', phpversion(), '>' ) ) {
+	wp_die( 'The APC object cache backend requires PHP 5.2 or higher. You are running ' . phpversion() . '. Please remove the <code>object-cache.php</code> file from your content directory.' );
 }
 
 // Users with setups where multiple installs share a common wp-config.php can use this
@@ -33,7 +35,7 @@ function wp_cache_add( $key, $data, $flag = '', $expire = 0 ) {
 }
 
 function wp_cache_incr( $key, $n = 1, $flag = '' ) {
-	return apc_get_cache()->incr( $key, $n, $flag );
+	return apc_get_cache()->incr2( $key, $n, $flag );
 }
 
 function wp_cache_decr( $key, $n = 1, $flag = '' ) {
@@ -58,7 +60,7 @@ function wp_cache_get( $id, $flag = '' ) {
 
 function wp_cache_init() {
 	global $wp_object_cache;
-	$wp_object_cache = new WP_Object_Cache();
+	$wp_object_cache = new APC_Object_Cache();
 }
 
 function wp_cache_replace( $key, $data, $flag = '', $expire = 0 ) {
@@ -101,7 +103,11 @@ class WP_Object_Cache {
 		}
 
 		$expire = ( $expire == 0 ) ? $this->default_expiration : $expire;
-		$result = apc_add( $key, $data, $expire );
+		if ( is_array( $data ) )
+			$store_data = new ArrayObject( $data );
+		else
+			$store_data =& $data;
+		$result = apc_add( $key, $store_data, $expire );
 		@ ++$this->stats['add'];
 		$this->group_ops[$group][] = "add $id";
 
@@ -125,18 +131,22 @@ class WP_Object_Cache {
 		$this->no_mc_groups = array_unique( $this->no_mc_groups );
 	}
 
-	function incr( $id, $n, $group ) {
+	// This is named incr2 because Batcache looks for incr
+	// We will define that in a class extension if it is available (APC 3.1.1 or higher)
+	function incr2( $id, $n, $group ) {
 		$key = $this->key( $id, $group );
-
-		apc_inc( $key, $n, $result );
-		return $result;
+		if ( function_exists( 'apc_inc' ) )
+			return apc_inc( $key, $n );
+		else
+			return false;
 	}
 
 	function decr( $id, $n, $group ) {
 		$key = $this->key( $id, $group );
-
-		apc_dec( $id, $n, $result );
-		return $result;
+		if ( function_exists( 'apc_dec' ) )
+			return apc_dec( $id, $n );
+		else
+			return false;
 	}
 
 	function close() {
@@ -172,8 +182,11 @@ class WP_Object_Cache {
 			$value = $this->cache[$key];
 		elseif ( in_array( $group, $this->no_mc_groups ) )
 			$value = false;
-		else
+		else {
 			$value = apc_fetch( $key );
+			if ( is_object( $value ) && 'ArrayObject' == get_class( $value ) )
+				$value = $value->getArrayCopy();
+		}
 
 		@ ++$this->stats['get'];
 		$this->group_ops[$group][] = "get $id";
@@ -217,6 +230,8 @@ class WP_Object_Cache {
 			return true;
 
 		$expire = ( $expire == 0 ) ? $this->default_expiration : $expire;
+		if ( is_array( $data ) )
+			$data = new ArrayObject( $data );
 		$result = apc_store( $key, $data, $expire );
 
 		return $result;
@@ -270,5 +285,17 @@ class WP_Object_Cache {
 
 	function WP_Object_Cache() {
 		$this->abspath = md5( ABSPATH );
+	}
+}
+
+if ( function_exists( 'apc_inc' ) ) {
+	class APC_Object_Cache extends WP_Object_Cache {
+		function incr( $id, $n, $group ) {
+			return parent::incr2( $id, $n, $group );
+		}
+	}
+} else {
+	class APC_Object_Cache extends WP_Object_Cache {
+		// Blank
 	}
 }
