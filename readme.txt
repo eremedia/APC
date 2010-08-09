@@ -4,7 +4,7 @@ Donate link: http://txfx.net/wordpress-plugins/donate
 Tags: APC, object cache, backend, cache, performance, speed, batcache
 Requires at least: 2.9.2
 Tested up to: 3.0.1
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 
 APC Object Cache provides a persistent memory-based backend for the WordPress object cache. APC must be available on your PHP install.
 
