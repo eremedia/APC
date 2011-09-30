@@ -196,7 +196,7 @@ class WP_Object_Cache {
 
 		$this->cache[$key] = $value;
 
-		if ( 'checkthedatabaseplease' == $value )
+		if ( 'checkthedatabaseplease' === $value )
 			$value = false;
 
 		return $value;
@@ -222,7 +222,7 @@ class WP_Object_Cache {
 
 	function set( $id, $data, $group = 'default', $expire = 0 ) {
 		$key = $this->key( $id, $group );
-		if ( isset( $this->cache[$key] ) && ('checkthedatabaseplease' == $this->cache[$key] ) )
+		if ( isset( $this->cache[$key] ) && ('checkthedatabaseplease' === $this->cache[$key] ) )
 			return false;
 		$this->cache[$key] = $data;
 
