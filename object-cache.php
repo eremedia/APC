@@ -1,8 +1,9 @@
 <?php
+
 /*
 Plugin Name: APC Object Cache
 Description: APC backend for the WP Object Cache.
-Version: 2.0.2
+Version: 2.0.2b
 URI: http://txfx.net/wordpress-plugins/apc/
 Author: Mark Jaquith
 Author URI: http://coveredwebservices.com/
@@ -16,7 +17,7 @@ http://wordpress.org/extend/plugins/memcached/
 
 if ( !function_exists( 'apc_fetch' ) ) {
 	wp_die( 'You do not have APC installed, so you cannot use the APC object cache backend. Please remove the <code>object-cache.php</code> file from your content directory.' );
-} elseif ( version_compare( '5.2', phpversion(), '>' ) ) {
+} elseif ( version_compare( '5.2.4', phpversion(), '>=' ) ) {
 	wp_die( 'The APC object cache backend requires PHP 5.2 or higher. You are running ' . phpversion() . '. Please remove the <code>object-cache.php</code> file from your content directory.' );
 }
 
@@ -25,93 +26,116 @@ if ( !function_exists( 'apc_fetch' ) ) {
 if ( !defined( 'WP_APC_KEY_SALT' ) )
 	define( 'WP_APC_KEY_SALT', 'wp' );
 
-function &apc_get_cache() {
+function wp_cache_add( $key, $data, $group = '', $expire = 0 ) {
 	global $wp_object_cache;
-	return $wp_object_cache;
+
+	return $wp_object_cache->add( $key, $data, $group, $expire );
 }
 
-function wp_cache_add( $key, $data, $flag = '', $expire = 0 ) {
-	return apc_get_cache()->add( $key, $data, $flag, $expire );
+function wp_cache_incr( $key, $n = 1, $group = '' ) {
+	global $wp_object_cache;
+
+	return $wp_object_cache->incr2( $key, $n, $group );
 }
 
-function wp_cache_incr( $key, $n = 1, $flag = '' ) {
-	return apc_get_cache()->incr2( $key, $n, $flag );
-}
+function wp_cache_decr( $key, $n = 1, $group = '' ) {
+	global $wp_object_cache;
 
-function wp_cache_decr( $key, $n = 1, $flag = '' ) {
-	return apc_get_cache()->decr( $key, $n, $flag );
+	return $wp_object_cache->decr( $key, $n, $group );
 }
 
 function wp_cache_close() {
 	return true;
 }
 
-function wp_cache_delete( $id, $flag = '' ) {
-	return apc_get_cache()->delete( $id, $flag );
+function wp_cache_delete( $key, $group = '' ) {
+	global $wp_object_cache;
+
+	return $wp_object_cache->delete( $key, $group );
 }
 
 function wp_cache_flush() {
-	return apc_get_cache()->flush();
+	global $wp_object_cache;
+
+	return $wp_object_cache->flush();
 }
 
-function wp_cache_get( $id, $flag = '' ) {
-	return apc_get_cache()->get( $id, $flag );
+function wp_cache_get( $key, $group = '', $force = false ) {
+	global $wp_object_cache;
+
+	return $wp_object_cache->get( $key, $group, $force );
 }
 
 function wp_cache_init() {
 	global $wp_object_cache;
+
 	$wp_object_cache = new APC_Object_Cache();
 }
 
-function wp_cache_replace( $key, $data, $flag = '', $expire = 0 ) {
-	return apc_get_cache()->replace( $key, $data, $flag, $expire );
+function wp_cache_replace( $key, $data, $group = '', $expire = 0 ) {
+	global $wp_object_cache;
+
+	return $wp_object_cache->replace( $key, $data, $group, $expire );
 }
 
-function wp_cache_set( $key, $data, $flag = '', $expire = 0 ) {
+function wp_cache_set( $key, $data, $group = '', $expire = 0 ) {
+	global $wp_object_cache;
+
 	if ( defined('WP_INSTALLING') == false )
-		return apc_get_cache()->set( $key, $data, $flag, $expire );
+		return $wp_object_cache->set( $key, $data, $group, $expire );
 	else
-		return apc_get_cache()->delete( $key, $flag );
+		return $wp_object_cache->delete( $key, $group );
 }
 
 function wp_cache_add_global_groups( $groups ) {
-	apc_get_cache()->add_global_groups( $groups );
+	global $wp_object_cache;
+
+	$wp_object_cache->add_global_groups( $groups );
 }
 
 function wp_cache_add_non_persistent_groups( $groups ) {
-	apc_get_cache()->add_non_persistent_groups( $groups );
+	global $wp_object_cache;
+
+	$wp_object_cache->add_non_persistent_groups( $groups );
 }
 
 class WP_Object_Cache {
-	var $global_groups = array( 'users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss' );
-	var $no_mc_groups = array( 'comment', 'counts' );
-	var $autoload_groups = array( 'options' );
+	var $global_groups = array();
+
+	var $no_mc_groups = array();
+
 	var $cache = array();
 	var $stats = array();
 	var $group_ops = array();
+
 	var $cache_enabled = true;
 	var $default_expiration = 0;
-	var $debug = false;
 	var $abspath = '';
 
 	function add( $id, $data, $group = 'default', $expire = 0 ) {
 		$key = $this->key( $id, $group );
 
+		if ( is_object( $data ) )
+			$data = clone $data;
+		elseif ( is_array( $data ) )
+			$data = new ArrayObject( $data );
+
 		if ( in_array( $group, $this->no_mc_groups ) ) {
 			$this->cache[$key] = $data;
 			return true;
+		} elseif ( isset( $this->cache[$key] ) && $this->cache[$key] !== false ) {
+			return false;
 		}
 
 		$expire = ( $expire == 0 ) ? $this->default_expiration : $expire;
-		if ( is_array( $data ) )
-			$store_data = new ArrayObject( $data );
-		else
-			$store_data =& $data;
-		$result = apc_add( $key, $store_data, $expire );
-		@ ++$this->stats['add'];
-		$this->group_ops[$group][] = "add $id";
 
-		$this->cache[$key] = $data;
+		$result = apc_add( $key, $store_data, $expire );
+		if ( false !== $result ) {
+			@ ++$this->stats['add'];
+			$this->group_ops[$group][] = "add $id";
+			$this->cache[$key] = $data;
+		}
+
 		return $result;
 	}
 
@@ -133,7 +157,7 @@ class WP_Object_Cache {
 
 	// This is named incr2 because Batcache looks for incr
 	// We will define that in a class extension if it is available (APC 3.1.1 or higher)
-	function incr2( $id, $n, $group ) {
+	function incr2( $id, $n = 1, $group = 'default' ) {
 		$key = $this->key( $id, $group );
 		if ( function_exists( 'apc_inc' ) )
 			return apc_inc( $key, $n );
@@ -141,7 +165,7 @@ class WP_Object_Cache {
 			return false;
 	}
 
-	function decr( $id, $n, $group ) {
+	function decr( $id, $n = 1, $group = 'default' ) {
 		$key = $this->key( $id, $group );
 		if ( function_exists( 'apc_dec' ) )
 			return apc_dec( $id, $n );
@@ -166,52 +190,58 @@ class WP_Object_Cache {
 		@ ++$this->stats['delete'];
 		$this->group_ops[$group][] = "delete $id";
 
-		unset( $this->cache[$key] );
+		if ( false !== $result )
+			unset( $this->cache[$key] );
 
 		return $result; 
 	}
 
 	function flush() {
+		// Don't flush if multi-blog.
+		if ( function_exists( 'is_site_admin' ) || defined( 'CUSTOM_USER_TABLE' ) && defined( 'CUSTOM_USER_META_TABLE' ) )
+			return true;
+
 		return apc_clear_cache( 'user' );
 	}
 
-	function get( $id, $group = 'default' ) {
-		$key = $this->key( $id, $group );
+	function get($id, $group = 'default', $force = false) {
+		$key = $this->key($id, $group);
 
-		if ( isset( $this->cache[$key] ) )
-			$value = $this->cache[$key];
-		elseif ( in_array( $group, $this->no_mc_groups ) )
-			$value = false;
-		else {
+		if ( isset($this->cache[$key]) && ( !$force || in_array($group, $this->no_mc_groups) ) ) {
+			if ( is_object( $this->cache[$key] ) )
+				$value = clone $this->cache[$key];
+			else
+				$value = $this->cache[$key];
+		} else if ( in_array($group, $this->no_mc_groups) ) {
+			$this->cache[$key] = $value = false;
+		} else {
 			$value = apc_fetch( $key );
 			if ( is_object( $value ) && 'ArrayObject' == get_class( $value ) )
 				$value = $value->getArrayCopy();
+			if ( NULL === $value )
+				$value = false;
+			$this->cache[$key] = $value;
 		}
 
 		@ ++$this->stats['get'];
 		$this->group_ops[$group][] = "get $id";
 
-		if ( NULL === $value )
+		if ( 'checkthedatabaseplease' === $value ) {
+			unset( $this->cache[$key] );
 			$value = false;
-
-		$this->cache[$key] = $value;
-
-		if ( 'checkthedatabaseplease' === $value )
-			$value = false;
+		}
 
 		return $value;
 	}
 
 	function key( $key, $group ) {
-		global $blog_id;
-
 		if ( empty( $group ) )
 			$group = 'default';
 
 		if ( false !== array_search( $group, $this->global_groups ) )
-			$prefix = '';
+			$prefix = $this->global_prefix;
 		else
-			$prefix = $blog_id . ':';
+			$prefix = $this->blog_prefix;
 
 		return WP_APC_KEY_SALT . ':' . $this->abspath . ":$prefix$group:$key";
 	}
@@ -224,14 +254,18 @@ class WP_Object_Cache {
 		$key = $this->key( $id, $group );
 		if ( isset( $this->cache[$key] ) && ('checkthedatabaseplease' === $this->cache[$key] ) )
 			return false;
+
+		if ( is_object( $data ) )
+			$data = clone $data;
+		elseif ( is_array( $data ) )
+			$data = new ArrayObject( $data );
+
 		$this->cache[$key] = $data;
 
 		if ( in_array( $group, $this->no_mc_groups ) )
 			return true;
 
 		$expire = ( $expire == 0 ) ? $this->default_expiration : $expire;
-		if ( is_array( $data ) )
-			$data = new ArrayObject( $data );
 		$result = apc_store( $key, $data, $expire );
 
 		return $result;
@@ -242,8 +276,7 @@ class WP_Object_Cache {
 			'get' => 'green',
 			'set' => 'purple',
 			'add' => 'blue',
-			'delete' => 'red'
-		);
+			'delete' => 'red');
 
 		$cmd = substr( $line, 0, strpos( $line, ' ' ) );
 
@@ -285,12 +318,23 @@ class WP_Object_Cache {
 
 	function WP_Object_Cache() {
 		$this->abspath = md5( ABSPATH );
+
+		global $blog_id, $table_prefix;
+		$this->global_prefix = '';
+		$this->blog_prefix = '';
+		if ( function_exists( 'is_multisite' ) ) {
+			$this->global_prefix = ( is_multisite() || defined('CUSTOM_USER_TABLE') && defined('CUSTOM_USER_META_TABLE') ) ? '' : $table_prefix;
+			$this->blog_prefix = ( is_multisite() ? $blog_id : $table_prefix ) . ':';
+		}
+
+		$this->cache_hits =& $this->stats['get'];
+		$this->cache_misses =& $this->stats['add'];
 	}
 }
 
 if ( function_exists( 'apc_inc' ) ) {
 	class APC_Object_Cache extends WP_Object_Cache {
-		function incr( $id, $n, $group ) {
+		function incr( $id, $n = 1, $group = 'default' ) {
 			return parent::incr2( $id, $n, $group );
 		}
 	}
