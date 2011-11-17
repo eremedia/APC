@@ -129,7 +129,7 @@ class WP_Object_Cache {
 
 		$expire = ( $expire == 0 ) ? $this->default_expiration : $expire;
 
-		$result = apc_add( $key, $store_data, $expire );
+		$result = apc_add( $key, $data, $expire );
 		if ( false !== $result ) {
 			@ ++$this->stats['add'];
 			$this->group_ops[$group][] = "add $id";
