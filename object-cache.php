@@ -117,8 +117,11 @@ class WP_Object_Cache {
 
 		if ( is_object( $data ) )
 			$data = clone $data;
-		elseif ( is_array( $data ) )
-			$data = new ArrayObject( $data );
+
+		$store_data = $data;
+
+		if ( is_array( $data ) )
+			$store_data = new ArrayObject( $data );
 
 		if ( in_array( $group, $this->no_mc_groups ) ) {
 			$this->cache[$key] = $data;
@@ -129,7 +132,7 @@ class WP_Object_Cache {
 
 		$expire = ( $expire == 0 ) ? $this->default_expiration : $expire;
 
-		$result = apc_add( $key, $data, $expire );
+		$result = apc_add( $key, $store_data, $expire );
 		if ( false !== $result ) {
 			@ ++$this->stats['add'];
 			$this->group_ops[$group][] = "add $id";
