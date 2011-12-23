@@ -105,7 +105,7 @@ class WP_Object_Cache {
 	var $no_mc_groups = array();
 
 	var $cache = array();
-	var $stats = array();
+	var $stats = array( 'get' => array(), 'delete' => array(), 'add' => array() );
 	var $group_ops = array();
 
 	var $cache_enabled = true;
