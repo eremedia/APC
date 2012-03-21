@@ -260,8 +260,11 @@ class WP_Object_Cache {
 
 		if ( is_object( $data ) )
 			$data = clone $data;
-		elseif ( is_array( $data ) )
-			$data = new ArrayObject( $data );
+
+		$store_data = $data;
+
+		if ( is_array( $data ) )
+			$store_data = new ArrayObject( $data );
 
 		$this->cache[$key] = $data;
 
@@ -269,7 +272,7 @@ class WP_Object_Cache {
 			return true;
 
 		$expire = ( $expire == 0 ) ? $this->default_expiration : $expire;
-		$result = apc_store( $key, $data, $expire );
+		$result = apc_store( $key, $store_data, $expire );
 
 		return $result;
 	}
