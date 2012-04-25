@@ -2,8 +2,8 @@
 Contributors: markjaquith
 Donate link: http://txfx.net/wordpress-plugins/donate
 Tags: APC, object cache, backend, cache, performance, speed, batcache
-Requires at least: 2.9.2
-Tested up to: 3.3
+Requires at least: 3.3
+Tested up to: 3.4
 Stable tag: 2.0.2
 
 APC Object Cache provides a persistent memory-based backend for the WordPress object cache. APC must be available on your PHP install.
@@ -33,9 +33,9 @@ Be sure to read the installation instructions, as this is **not** a traditional 
 
 Yes! APC 3.1.1+ supports incrementers and handles its own cleanup of expired objects, so it works just fine for Batcache. Lower versions of APC will work, but the hits trigger will be disabled.
 
-= Does this support versions of WordPress earlier than 3.1? =
+= Does this support versions of WordPress earlier than 3.3? =
 
-Probably, but I'm not going to support them, and you shouldn't still be running them!
+Maybe, but I'm not going to support them, and you shouldn't still be running them!
 
 = I share `wp-config.php` among multiple WordPress installs. How can I guarantee key uniqueness? =
 
@@ -58,7 +58,7 @@ Define `WP_APC_KEY_SALT` to something that is unique for each install (like an m
 * Convert arrays to ArrayObject objects (APC does not cache multi-level arrays or arrays of objects, so this works around that)
 * Require PHP 5.2+
 
-= 2.0.2b =
+= 2.0.3 =
 * Parity with the Memcache backend, as much as was possible
 * Object cloning
 * Requires WP 3.1+
@@ -75,5 +75,5 @@ Fixed bugs regarding wp_cache_delete()
 = 2.0.2 =
 Support for lower versions of APC (Batcache, especially). Adds support for more esoteric `wp-config.php` setups, and adds minor performance tweaks.
 
-= 2.0.2b =
+= 2.0.3 =
 Object cloning and a fix for the boolean true value bug. Parity with Memcache backend, as much as was possible.
