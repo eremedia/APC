@@ -2,7 +2,7 @@
 /*
 Plugin Name: APC Object Cache
 Description: APC backend for the WP Object Cache.
-Version: 2.0.4-beta
+Version: 2.0.4
 URI: http://txfx.net/wordpress-plugins/apc/
 Author: Mark Jaquith
 Author URI: http://coveredwebservices.com/
