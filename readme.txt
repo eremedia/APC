@@ -43,12 +43,14 @@ Define `WP_APC_KEY_SALT` to something that is unique for each install (like an m
 
 == Changelog ==
 
-= 2.0 =
-* First version in SVN
-* Updated to support increment/decrement and feature parity with the Memcached backend (except for multiget support)
+= 2.0.4 =
+* `die()` when people mistakenly try to activate this as a plugin, and provide a helpful message for where they should move the file
 
-= 2.0.1 =
-* Fixed bugs in wp_cache_delete()
+= 2.0.3 =
+* Parity with the Memcache backend, as much as was possible
+* Object cloning
+* Requires WP 3.1+
+* Fix double-equals vs triple-equals bug with boolean true values
 
 = 2.0.2 =
 * Perform the `md5( ABSPATH )` calculation once per load (props jdub)
@@ -58,22 +60,26 @@ Define `WP_APC_KEY_SALT` to something that is unique for each install (like an m
 * Convert arrays to ArrayObject objects (APC does not cache multi-level arrays or arrays of objects, so this works around that)
 * Require PHP 5.2+
 
-= 2.0.3 =
-* Parity with the Memcache backend, as much as was possible
-* Object cloning
-* Requires WP 3.1+
-* Fix double-equals vs triple-equals bug with boolean true values
+= 2.0.1 =
+* Fixed bugs in wp_cache_delete()
+
+= 2.0 =
+* First version in SVN
+* Updated to support increment/decrement and feature parity with the Memcached backend (except for multiget support)
 
 == Upgrade Notice ==
 
-= 2.0 =
-First update in four years! This should last you a while.
+= 2.0.4 =
+More helpful error message for people who try to activate this as a plugin.
 
-= 2.0.1 =
-Fixed bugs regarding wp_cache_delete()
+= 2.0.3 =
+Object cloning and a fix for the boolean true value bug. Parity with Memcache backend, as much as was possible.
 
 = 2.0.2 =
 Support for lower versions of APC (Batcache, especially). Adds support for more esoteric `wp-config.php` setups, and adds minor performance tweaks.
 
-= 2.0.3 =
-Object cloning and a fix for the boolean true value bug. Parity with Memcache backend, as much as was possible.
+= 2.0.1 =
+Fixed bugs regarding wp_cache_delete()
+
+= 2.0 =
+First update in four years! This should last you a while.
